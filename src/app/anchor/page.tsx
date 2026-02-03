@@ -2,11 +2,12 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, Hash, Check, Copy, ExternalLink, Loader, Clock, FolderTree } from 'lucide-react';
+import { Upload, FileText, Hash, Check, Copy, ExternalLink, Loader, Clock, FolderTree, Sparkles } from 'lucide-react';
 import { hashFile, hashString, formatHash } from '@/lib/hash';
 import { getBlueScore } from '@/lib/kaspa-api';
 import { BatchAnchoring } from '@/components/BatchAnchoring';
 import { ProofHistory, useProofHistory } from '@/components/ProofHistory';
+import { AIDocumentAnalyzer } from '@/components/AIDocumentAnalyzer';
 
 type AnchorMode = 'file' | 'text' | 'batch';
 
@@ -21,6 +22,7 @@ interface AnchorResult {
 export default function AnchorPage() {
     const [mode, setMode] = useState<AnchorMode>('file');
     const [file, setFile] = useState<File | null>(null);
+    const [fileContent, setFileContent] = useState<string>('');
     const [text, setText] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [result, setResult] = useState<AnchorResult | null>(null);
@@ -63,21 +65,38 @@ export default function AnchorPage() {
         }
     }, []);
 
+    const readFileContent = useCallback(async (f: File) => {
+        // Read content for text-based files
+        const textTypes = ['text/', 'application/json', 'application/xml', 'application/javascript'];
+        const isTextFile = textTypes.some(t => f.type.startsWith(t)) || f.name.match(/\.(txt|md|json|xml|html|css|js|ts|tsx|jsx|csv|log)$/i);
+
+        if (isTextFile && f.size < 100000) { // Limit to 100KB
+            const content = await f.text();
+            setFileContent(content);
+        } else {
+            setFileContent(`[Binary file: ${f.name}]\nSize: ${(f.size / 1024).toFixed(2)} KB\nType: ${f.type || 'unknown'}`);
+        }
+    }, []);
+
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
         setDragActive(false);
 
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            setFile(e.dataTransfer.files[0]);
+            const f = e.dataTransfer.files[0];
+            setFile(f);
             setResult(null);
+            readFileContent(f);
         }
-    }, []);
+    }, [readFileContent]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
+            const f = e.target.files[0];
+            setFile(f);
             setResult(null);
+            readFileContent(f);
         }
     };
 
@@ -172,8 +191,8 @@ export default function AnchorPage() {
                 <button
                     onClick={() => { setMode('file'); setResult(null); }}
                     className={`px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all ${mode === 'file'
-                            ? 'bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]'
-                            : 'glass-card text-white/60 hover:text-white'
+                        ? 'bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]'
+                        : 'glass-card text-white/60 hover:text-white'
                         }`}
                 >
                     <Upload size={18} />
@@ -182,8 +201,8 @@ export default function AnchorPage() {
                 <button
                     onClick={() => { setMode('text'); setResult(null); }}
                     className={`px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all ${mode === 'text'
-                            ? 'bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]'
-                            : 'glass-card text-white/60 hover:text-white'
+                        ? 'bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]'
+                        : 'glass-card text-white/60 hover:text-white'
                         }`}
                 >
                     <FileText size={18} />
@@ -192,8 +211,8 @@ export default function AnchorPage() {
                 <button
                     onClick={() => { setMode('batch'); setResult(null); }}
                     className={`px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all ${mode === 'batch'
-                            ? 'bg-[var(--secondary)]/20 text-[var(--secondary)] border border-[var(--secondary)]'
-                            : 'glass-card text-white/60 hover:text-white'
+                        ? 'bg-[var(--secondary)]/20 text-[var(--secondary)] border border-[var(--secondary)]'
+                        : 'glass-card text-white/60 hover:text-white'
                         }`}
                 >
                     <FolderTree size={18} />
@@ -267,6 +286,16 @@ export default function AnchorPage() {
                                                 </div>
                                             )}
                                         </label>
+                                    </div>
+                                )}
+
+                                {/* AI Document Analyzer - Shows after file selection */}
+                                {mode === 'file' && file && fileContent && (
+                                    <div className="mt-4">
+                                        <AIDocumentAnalyzer
+                                            fileContent={fileContent}
+                                            fileName={file.name}
+                                        />
                                     </div>
                                 )}
 
