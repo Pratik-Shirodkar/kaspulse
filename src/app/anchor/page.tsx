@@ -2,12 +2,13 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, Hash, Check, Copy, ExternalLink, Loader, Clock, FolderTree, Sparkles } from 'lucide-react';
+import { Upload, FileText, Hash, Check, Copy, ExternalLink, Loader, Clock, FolderTree, Sparkles, Wallet } from 'lucide-react';
 import { hashFile, hashString, formatHash } from '@/lib/hash';
 import { getBlueScore } from '@/lib/kaspa-api';
 import { BatchAnchoring } from '@/components/BatchAnchoring';
 import { ProofHistory, useProofHistory } from '@/components/ProofHistory';
 import { AIDocumentAnalyzer } from '@/components/AIDocumentAnalyzer';
+import { useWallet } from '@/components/WalletProvider';
 
 type AnchorMode = 'file' | 'text' | 'batch';
 
@@ -17,6 +18,8 @@ interface AnchorResult {
     blueScore: number;
     type: 'file' | 'text';
     fileName?: string;
+    signature?: string;
+    walletAddress?: string;
 }
 
 export default function AnchorPage() {
@@ -100,6 +103,9 @@ export default function AnchorPage() {
         }
     };
 
+    // Wallet context for on-chain signing
+    const { isConnected, address, signProof } = useWallet();
+
     const handleAnchor = async () => {
         setIsProcessing(true);
         try {
@@ -122,12 +128,26 @@ export default function AnchorPage() {
                 // Use cached value
             }
 
+            // Sign with wallet if connected (on-chain proof)
+            let signature: string | undefined;
+            let walletAddress: string | undefined;
+            if (isConnected && address) {
+                try {
+                    signature = await signProof(hash);
+                    walletAddress = address;
+                } catch (error) {
+                    console.warn('Wallet signature skipped:', error);
+                }
+            }
+
             const anchorResult: AnchorResult = {
                 hash,
                 timestamp: Date.now(),
                 blueScore,
                 type: mode as 'file' | 'text',
-                fileName: mode === 'file' ? file?.name : undefined
+                fileName: mode === 'file' ? file?.name : undefined,
+                signature,
+                walletAddress,
             };
 
             setResult(anchorResult);
@@ -138,7 +158,9 @@ export default function AnchorPage() {
                 type: mode as 'file' | 'text',
                 name: mode === 'file' ? file?.name || 'Unnamed file' : `Text (${text.slice(0, 20)}...)`,
                 timestamp: anchorResult.timestamp,
-                blueScore: anchorResult.blueScore
+                blueScore: anchorResult.blueScore,
+                signature,
+                walletAddress,
             });
         } catch (error) {
             console.error('Anchor error:', error);

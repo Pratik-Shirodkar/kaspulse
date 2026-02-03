@@ -13,6 +13,8 @@ export interface StoredProof {
     blueScore: number;
     merkleRoot?: string;
     fileCount?: number;
+    signature?: string;
+    walletAddress?: string;
 }
 
 const STORAGE_KEY = 'kaspulse_proofs';
@@ -204,8 +206,8 @@ https://kaspulse.app
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-start gap-3 overflow-hidden flex-1">
                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${proof.type === 'file' ? 'bg-[var(--primary)]/20 text-[var(--primary)]' :
-                                                proof.type === 'batch' ? 'bg-[var(--secondary)]/20 text-[var(--secondary)]' :
-                                                    'bg-[var(--success)]/20 text-[var(--success)]'
+                                            proof.type === 'batch' ? 'bg-[var(--secondary)]/20 text-[var(--secondary)]' :
+                                                'bg-[var(--success)]/20 text-[var(--success)]'
                                             }`}>
                                             {getTypeIcon(proof.type)}
                                         </div>
