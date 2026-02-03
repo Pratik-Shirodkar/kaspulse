@@ -7,6 +7,7 @@ import { DAGVisualizer } from '@/components/DAGVisualizer';
 import { BlockTimeRace } from '@/components/BlockTimeRace';
 import { NetworkHealthMonitor } from '@/components/NetworkHealthMonitor';
 import { AddressExplorer } from '@/components/AddressExplorer';
+import { AIInsightsPanel } from '@/components/AIInsightsPanel';
 import { getNetworkStats } from '@/lib/kaspa-api';
 import { Blocks, Gauge, DollarSign, Coins, Activity, Zap, ChevronDown, ChevronUp, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -121,6 +122,11 @@ export default function DashboardPage() {
                 <StatCard label="Supply" value={(stats?.circulatingSupply || 0) / 1e9} suffix="B" decimals={1} icon={<Coins size={20} />} />
                 <StatCard label="DAA Score" value={stats?.daaScore || 0} icon={<Activity size={20} />} isLive trend="up" />
                 <StatCard label="Block Time" value={1} suffix="s" icon={<Zap size={20} />} trend="neutral" />
+            </div>
+
+            {/* AI Insights Panel - PROMINENT AI FEATURE */}
+            <div className="mb-8">
+                <AIInsightsPanel />
             </div>
 
             {/* DAG Visualizer */}

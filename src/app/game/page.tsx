@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Gamepad2, Play, Pause, RotateCcw, Trophy, Zap, ArrowLeft, Volume2, VolumeX } from 'lucide-react';
+import { Gamepad2, Play, Pause, RotateCcw, Trophy, Zap, ArrowLeft, Volume2, VolumeX, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { getBlueScore } from '@/lib/kaspa-api';
+import { AIGameNarrator, AIGameStatus } from '@/components/AIGameNarrator';
 
 interface Block {
     id: string;
@@ -359,6 +360,15 @@ export default function GamePage() {
                         width={700}
                         height={500}
                         className="w-full rounded-lg bg-[#0a0a0f] cursor-none"
+                    />
+
+                    {/* AI Game Narrator */}
+                    <AIGameNarrator
+                        score={score}
+                        blocksCollected={blocksCollected}
+                        missedBlocks={missedBlocks}
+                        isPlaying={isPlaying && !isPaused}
+                        currentBlueScore={currentBlueScore}
                     />
 
                     {/* Overlay States */}
