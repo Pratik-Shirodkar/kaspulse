@@ -8,6 +8,8 @@ import {
     getAccounts,
     signMessage,
     getWalletProvider,
+    createOnChainAnchor,
+    getNetwork,
     WalletState,
 } from '@/lib/wallet';
 
@@ -17,9 +19,11 @@ interface WalletContextType {
     address: string | null;
     balance: number | null;
     walletName: string | null;
+    network: string | null;
     connect: () => Promise<void>;
     disconnect: () => Promise<void>;
     signProof: (hash: string) => Promise<string>;
+    anchorOnChain: (hash: string) => Promise<{ txId: string; signature: string }>;
     refreshBalance: () => Promise<void>;
     isConnecting: boolean;
     error: string | null;
@@ -49,6 +53,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     const [isInstalled, setIsInstalled] = useState(false);
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [network, setNetwork] = useState<string | null>(null);
 
     // Check if wallet is installed on mount
     useEffect(() => {
@@ -63,6 +68,13 @@ export function WalletProvider({ children }: WalletProviderProps) {
                 try {
                     const walletState = await connectWallet();
                     setState(walletState);
+                    // Get network
+                    try {
+                        const net = await getNetwork();
+                        setNetwork(net);
+                    } catch {
+                        setNetwork('unknown');
+                    }
                 } catch (error) {
                     console.error('Auto-connect failed:', error);
                 }
@@ -84,6 +96,13 @@ export function WalletProvider({ children }: WalletProviderProps) {
         try {
             const walletState = await connectWallet();
             setState(walletState);
+            // Get network
+            try {
+                const net = await getNetwork();
+                setNetwork(net);
+            } catch {
+                setNetwork('unknown');
+            }
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Connection failed';
             setError(message);
@@ -124,15 +143,26 @@ export function WalletProvider({ children }: WalletProviderProps) {
         return await signMessage(hash);
     }, [state.isConnected]);
 
+    // Create on-chain anchor (broadcasts actual transaction)
+    const anchorOnChain = useCallback(async (hash: string): Promise<{ txId: string; signature: string }> => {
+        if (!state.isConnected) {
+            throw new Error('Wallet not connected');
+        }
+
+        return await createOnChainAnchor(hash);
+    }, [state.isConnected]);
+
     const value: WalletContextType = {
         isInstalled,
         isConnected: state.isConnected,
         address: state.address,
         balance: state.balance,
         walletName: state.walletName,
+        network,
         connect,
         disconnect,
         signProof,
+        anchorOnChain,
         refreshBalance,
         isConnecting,
         error,

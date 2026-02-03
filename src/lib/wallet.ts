@@ -14,6 +14,9 @@ export interface KaspaWalletProvider {
     getAccounts: () => Promise<string[]>;
     getBalance: () => Promise<{ confirmed: number; unconfirmed: number; total: number }>;
     signMessage: (message: string) => Promise<string>;
+    sendKaspa: (toAddress: string, sompi: number, options?: { priorityFee?: number }) => Promise<string>;
+    getNetwork: () => Promise<string>;
+    switchNetwork: (network: string) => Promise<void>;
     disconnect?: () => Promise<void>;
     on?: (event: string, callback: (...args: unknown[]) => void) => void;
     removeListener?: (event: string, callback: (...args: unknown[]) => void) => void;
@@ -143,4 +146,85 @@ export function formatBalance(balance: number | null): string {
         minimumFractionDigits: 2,
         maximumFractionDigits: 4
     });
+}
+
+// Get current network
+export async function getNetwork(): Promise<string> {
+    const provider = getWalletProvider();
+
+    if (!provider) {
+        throw new Error('No wallet connected');
+    }
+
+    try {
+        return await provider.getNetwork();
+    } catch {
+        return 'unknown';
+    }
+}
+
+// Switch network (testnet/mainnet)
+export async function switchNetwork(network: 'kaspa-testnet' | 'kaspa-mainnet'): Promise<void> {
+    const provider = getWalletProvider();
+
+    if (!provider) {
+        throw new Error('No wallet connected');
+    }
+
+    await provider.switchNetwork(network);
+}
+
+// Send KAS transaction (for on-chain anchoring)
+// Returns the transaction ID
+export async function sendTransaction(
+    toAddress: string,
+    amountKas: number = 0.001, // Default 0.001 KAS (100000 sompi)
+    priorityFee: number = 0
+): Promise<string> {
+    const provider = getWalletProvider();
+
+    if (!provider) {
+        throw new Error('No wallet connected');
+    }
+
+    // Convert KAS to sompi (1 KAS = 100,000,000 sompi)
+    const sompi = Math.floor(amountKas * 1e8);
+
+    if (sompi < 10000) {
+        throw new Error('Amount too small. Minimum is 0.0001 KAS');
+    }
+
+    try {
+        const txId = await provider.sendKaspa(toAddress, sompi, { priorityFee });
+        return txId;
+    } catch (error) {
+        console.error('Transaction failed:', error);
+        throw error;
+    }
+}
+
+// Create an on-chain anchor proof by sending a transaction
+// The transaction ID serves as the on-chain proof
+export async function createOnChainAnchor(
+    hash: string,
+    recipientAddress?: string
+): Promise<{ txId: string; signature: string }> {
+    const provider = getWalletProvider();
+
+    if (!provider) {
+        throw new Error('No wallet connected');
+    }
+
+    // Get connected wallet's address as default recipient (self-transfer)
+    const accounts = await provider.getAccounts();
+    const selfAddress = accounts[0];
+    const toAddress = recipientAddress || selfAddress;
+
+    // Sign the hash first (this proves you anchored this specific data)
+    const signature = await provider.signMessage(hash);
+
+    // Send minimal transaction (0.001 KAS = ~$0.0001)
+    const txId = await sendTransaction(toAddress, 0.001);
+
+    return { txId, signature };
 }

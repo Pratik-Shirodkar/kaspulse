@@ -9,6 +9,7 @@ import { BatchAnchoring } from '@/components/BatchAnchoring';
 import { ProofHistory, useProofHistory } from '@/components/ProofHistory';
 import { AIDocumentAnalyzer } from '@/components/AIDocumentAnalyzer';
 import { useWallet } from '@/components/WalletProvider';
+import { Radio, Link2 } from 'lucide-react';
 
 type AnchorMode = 'file' | 'text' | 'batch';
 
@@ -20,6 +21,8 @@ interface AnchorResult {
     fileName?: string;
     signature?: string;
     walletAddress?: string;
+    txId?: string; // On-chain transaction ID
+    isOnChain: boolean;
 }
 
 export default function AnchorPage() {
@@ -32,6 +35,7 @@ export default function AnchorPage() {
     const [currentBlueScore, setCurrentBlueScore] = useState<number>(0);
     const [dragActive, setDragActive] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [onChainMode, setOnChainMode] = useState(true); // Default to on-chain
     const { addProof } = useProofHistory();
 
     // Fetch current blue score
@@ -104,7 +108,7 @@ export default function AnchorPage() {
     };
 
     // Wallet context for on-chain signing
-    const { isConnected, address, signProof } = useWallet();
+    const { isConnected, address, signProof, anchorOnChain, network } = useWallet();
 
     const handleAnchor = async () => {
         setIsProcessing(true);
@@ -128,10 +132,25 @@ export default function AnchorPage() {
                 // Use cached value
             }
 
-            // Sign with wallet if connected (on-chain proof)
             let signature: string | undefined;
             let walletAddress: string | undefined;
-            if (isConnected && address) {
+            let txId: string | undefined;
+
+            // On-chain anchoring (broadcasts transaction)
+            if (onChainMode && isConnected && address) {
+                try {
+                    const result = await anchorOnChain(hash);
+                    txId = result.txId;
+                    signature = result.signature;
+                    walletAddress = address;
+                } catch (error) {
+                    console.error('On-chain anchor failed:', error);
+                    alert('Transaction failed. Check your balance and try again.');
+                    setIsProcessing(false);
+                    return;
+                }
+            } else if (isConnected && address) {
+                // Just sign locally (no transaction)
                 try {
                     signature = await signProof(hash);
                     walletAddress = address;
@@ -148,6 +167,8 @@ export default function AnchorPage() {
                 fileName: mode === 'file' ? file?.name : undefined,
                 signature,
                 walletAddress,
+                txId,
+                isOnChain: !!txId,
             };
 
             setResult(anchorResult);
@@ -205,6 +226,17 @@ export default function AnchorPage() {
                     <span className="font-mono text-[var(--primary)] font-semibold">
                         {currentBlueScore.toLocaleString()}
                     </span>
+                    {network && (
+                        <>
+                            <div className="w-px h-4 bg-white/10 mx-1" />
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${network === 'kaspa-mainnet'
+                                ? 'bg-[var(--success)]/20 text-[var(--success)]'
+                                : 'bg-[var(--warning)]/20 text-[var(--warning)]'
+                                }`}>
+                                {network === 'kaspa-mainnet' ? 'Mainnet' : 'Testnet'}
+                            </span>
+                        </>
+                    )}
                 </div>
             </motion.div>
 
@@ -241,6 +273,33 @@ export default function AnchorPage() {
                     Batch
                 </button>
             </div>
+
+            {/* On-Chain Toggle (Only if connected) */}
+            {isConnected && (
+                <div className="flex justify-center mb-8">
+                    <div className="glass-card p-1 rounded-lg inline-flex items-center">
+                        <button
+                            onClick={() => setOnChainMode(false)}
+                            className={`px-4 py-1.5 rounded-md text-sm transition-all ${!onChainMode
+                                ? 'bg-white/10 text-white'
+                                : 'text-white/50 hover:text-white'
+                                }`}
+                        >
+                            Off-Chain Proof
+                        </button>
+                        <button
+                            onClick={() => setOnChainMode(true)}
+                            className={`px-4 py-1.5 rounded-md text-sm flex items-center gap-2 transition-all ${onChainMode
+                                ? 'bg-[var(--primary)]/20 text-[var(--primary)] shadow-sm'
+                                : 'text-white/50 hover:text-white'
+                                }`}
+                        >
+                            <Link2 size={14} />
+                            On-Chain Transaction
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Anchoring Area */}
@@ -337,25 +396,30 @@ export default function AnchorPage() {
                                 )}
 
                                 {/* Anchor Button */}
-                                <div className="mt-6 text-center">
-                                    <button
-                                        onClick={handleAnchor}
-                                        disabled={isProcessing || (mode === 'file' ? !file : !text.trim())}
-                                        className="btn-primary text-lg px-10 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {isProcessing ? (
-                                            <span className="flex items-center gap-2">
-                                                <Loader className="animate-spin" size={20} />
-                                                Processing...
-                                            </span>
-                                        ) : (
-                                            <span className="flex items-center gap-2">
-                                                <Hash size={20} />
-                                                Create Proof
-                                            </span>
-                                        )}
-                                    </button>
-                                </div>
+                                {/* Action Button */}
+                                <button
+                                    onClick={handleAnchor}
+                                    disabled={!file && !text && mode !== 'file'}
+                                    className="w-full btn-primary py-4 text-lg font-bold flex items-center justify-center gap-3 mt-6"
+                                >
+                                    {isProcessing ? (
+                                        <>
+                                            <Loader className="animate-spin" />
+                                            {onChainMode && isConnected ? 'Broadcasting Transaction...' : 'Anchoring...'}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {onChainMode && isConnected ? <Link2 size={24} /> : <Hash size={24} />}
+                                            {onChainMode && isConnected ? 'Anchor On-Chain' : 'Generate Proof'}
+                                        </>
+                                    )}
+                                </button>
+
+                                {onChainMode && isConnected && (
+                                    <p className="text-xs text-white/40 text-center mt-3">
+                                        Cost: ~0.001 KAS • Network: {network === 'kaspa-mainnet' ? 'Mainnet' : 'Testnet'}
+                                    </p>
+                                )}
                             </motion.div>
                         ) : (
                             <motion.div
@@ -376,13 +440,13 @@ export default function AnchorPage() {
                                     </motion.div>
                                     <h2 className="text-xl font-bold text-[var(--success)]">Proof Created!</h2>
                                     <p className="text-white/60 mt-1 text-sm">
-                                        Anchored to block {result.blueScore.toLocaleString()}
+                                        Anchored to block {result?.blueScore.toLocaleString()}
                                     </p>
                                 </div>
 
                                 {/* Proof Details */}
                                 <div className="space-y-3">
-                                    {result.fileName && (
+                                    {result?.fileName && (
                                         <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                                             <span className="text-white/50 text-sm">File</span>
                                             <span className="font-mono text-sm">{result.fileName}</span>
@@ -393,7 +457,7 @@ export default function AnchorPage() {
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-white/50 text-sm">SHA-256 Hash</span>
                                             <button
-                                                onClick={() => copyToClipboard(result.hash)}
+                                                onClick={() => copyToClipboard(result?.hash || '')}
                                                 className="text-[var(--primary)] hover:text-[var(--primary)]/80 flex items-center gap-1 text-sm"
                                             >
                                                 {copied ? <Check size={14} /> : <Copy size={14} />}
@@ -401,32 +465,59 @@ export default function AnchorPage() {
                                             </button>
                                         </div>
                                         <code className="block font-mono text-xs break-all text-[var(--primary)]">
-                                            {result.hash}
+                                            {result?.hash}
                                         </code>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="p-3 bg-white/5 rounded-lg">
-                                            <span className="text-white/50 text-xs flex items-center gap-1">
-                                                <Clock size={12} /> Timestamp
-                                            </span>
-                                            <div className="font-mono text-sm mt-1">
-                                                {new Date(result.timestamp).toLocaleString()}
-                                            </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="p-4 bg-white/5 rounded-lg">
+                                            <div className="text-white/50 text-sm mb-1">Timestamp</div>
+                                            <div className="font-mono">{result?.timestamp ? new Date(result.timestamp).toLocaleString() : ''}</div>
                                         </div>
-                                        <div className="p-3 bg-white/5 rounded-lg">
-                                            <span className="text-white/50 text-xs">Block</span>
-                                            <div className="font-mono text-sm text-[var(--primary)] mt-1">
-                                                {result.blueScore.toLocaleString()}
+                                        <div className="p-4 bg-white/5 rounded-lg">
+                                            <div className="text-white/50 text-sm mb-1">Block Height</div>
+                                            <div className="font-mono text-[var(--primary)]">
+                                                {result?.blueScore.toLocaleString()}
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Transaction ID Display */}
+                                    {result?.txId && (
+                                        <div className="p-4 bg-[var(--primary)]/10 border border-[var(--primary)]/30 rounded-lg">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-[var(--primary)] text-sm font-semibold flex items-center gap-2">
+                                                    <Link2 size={16} />
+                                                    Transaction ID
+                                                </span>
+                                                <a
+                                                    href={`https://explorer.kaspa.org/txs/${result.txId}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-xs text-white/50 hover:text-white flex items-center gap-1"
+                                                >
+                                                    View Explorer <ExternalLink size={12} />
+                                                </a>
+                                            </div>
+                                            <div className="flex items-center justify-between bg-black/20 p-2 rounded">
+                                                <code className="text-xs font-mono text-[var(--primary)] truncate flex-1 mr-2">
+                                                    {result.txId}
+                                                </code>
+                                                <button
+                                                    onClick={() => copyToClipboard(result.txId || '')}
+                                                    className="text-white/40 hover:text-white"
+                                                >
+                                                    {copied ? <Check size={14} className="text-[var(--success)]" /> : <Copy size={14} />}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Actions */}
                                 <div className="mt-6 flex gap-3 justify-center">
                                     <a
-                                        href={`/verify?hash=${result.hash}`}
+                                        href={`/verify?hash=${result?.hash}`}
                                         className="btn-primary flex items-center gap-2"
                                     >
                                         <ExternalLink size={16} />
