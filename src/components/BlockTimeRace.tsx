@@ -2,22 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Clock, ArrowRight } from 'lucide-react';
+import { Zap, Clock, ArrowRight, Shield } from 'lucide-react';
 
 interface ChainData {
     name: string;
     blockTime: number; // in seconds
     color: string;
     icon: string;
+    consensus: 'PoW' | 'PoS';
 }
 
+// Only Proof-of-Work chains for fair comparison - Kaspa is the FASTEST PoW chain
 const chains: ChainData[] = [
-    { name: 'Kaspa', blockTime: 1, color: '#00ffff', icon: '⚡' },
-    { name: 'Solana', blockTime: 0.4, color: '#9945FF', icon: '◎' },
-    { name: 'Avalanche', blockTime: 2, color: '#E84142', icon: '🔺' },
-    { name: 'Polygon', blockTime: 2, color: '#8247E5', icon: '⬡' },
-    { name: 'Ethereum', blockTime: 12, color: '#627EEA', icon: 'Ξ' },
-    { name: 'Bitcoin', blockTime: 600, color: '#F7931A', icon: '₿' },
+    { name: 'Kaspa', blockTime: 1, color: '#00ffff', icon: '⚡', consensus: 'PoW' },
+    { name: 'Litecoin', blockTime: 150, color: '#345D9D', icon: 'Ł', consensus: 'PoW' },
+    { name: 'Dogecoin', blockTime: 60, color: '#C2A633', icon: 'Ð', consensus: 'PoW' },
+    { name: 'Bitcoin Cash', blockTime: 600, color: '#8DC351', icon: '₿', consensus: 'PoW' },
+    { name: 'Ethereum Classic', blockTime: 13, color: '#3AB83A', icon: 'Ξ', consensus: 'PoW' },
+    { name: 'Bitcoin', blockTime: 600, color: '#F7931A', icon: '₿', consensus: 'PoW' },
 ];
 
 export function BlockTimeRace() {
@@ -60,10 +62,11 @@ export function BlockTimeRace() {
                 <div>
                     <h3 className="text-lg font-semibold flex items-center gap-2">
                         <Zap className="text-[var(--primary)]" size={20} />
-                        Block Time Race
+                        PoW Block Time Race
                     </h3>
-                    <p className="text-sm text-white/50">
-                        See how Kaspa compares to other blockchains
+                    <p className="text-sm text-white/50 flex items-center gap-1">
+                        <Shield size={12} />
+                        Comparing Proof-of-Work blockchains only
                     </p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -166,11 +169,11 @@ export function BlockTimeRace() {
                     </div>
                     <div>
                         <div className="text-2xl font-bold text-[var(--success)]">
-                            {blockCounts['Kaspa'] && blockCounts['Ethereum']
-                                ? Math.round((blockCounts['Kaspa'] / Math.max(blockCounts['Ethereum'], 1)))
-                                : blockCounts['Kaspa'] || 0}x
+                            {blockCounts['Kaspa'] && blockCounts['Litecoin']
+                                ? Math.round((blockCounts['Kaspa'] / Math.max(blockCounts['Litecoin'], 1)))
+                                : blockCounts['Kaspa'] ? `${Math.floor(150)}` : 0}x
                         </div>
-                        <div className="text-xs text-white/50">Faster than ETH</div>
+                        <div className="text-xs text-white/50">Faster than LTC</div>
                     </div>
                     <div>
                         <div className="text-2xl font-bold text-[var(--warning)]">

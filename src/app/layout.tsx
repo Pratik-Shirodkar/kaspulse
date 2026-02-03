@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
+import { ClientProviders } from "@/components/ClientProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,13 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KasPulse - Real-Time Kaspa Data Dashboard",
-  description: "Experience Kaspa's millisecond block times through live data visualization, anchoring, and verification. Built for Kaspathon 2026.",
-  keywords: ["Kaspa", "blockchain", "real-time", "data anchoring", "verification", "dashboard"],
+  title: "KasPulse - AI-Powered Kaspa Ecosystem",
+  description: "Experience Kaspa's millisecond block times through AI-powered insights, live data visualization, payments, and gaming. Built for Kaspathon 2026.",
+  keywords: ["Kaspa", "blockchain", "AI", "real-time", "data anchoring", "payments", "gaming"],
   authors: [{ name: "KasPulse Team" }],
   openGraph: {
-    title: "KasPulse - Real-Time Kaspa Data Dashboard",
-    description: "Experience blockchain speed like never before",
+    title: "KasPulse - AI-Powered Kaspa Ecosystem",
+    description: "The Super App for Kaspa with AI-powered blockchain insights",
     type: "website",
   },
 };
@@ -37,9 +38,12 @@ export default function RootLayout({
       >
         <Header />
         <main className="pt-24 md:pt-20 pb-8 relative z-10">
-          {children}
+          <ClientProviders>
+            {children}
+          </ClientProviders>
         </main>
       </body>
     </html>
   );
 }
+
