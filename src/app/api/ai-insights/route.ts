@@ -20,22 +20,29 @@ function getBedrockClient() {
 
 async function getKaspaData() {
     try {
-        const [blockdag, hashrate, price, supply] = await Promise.all([
+        const [blockdag, hashrateData, priceData, supply] = await Promise.all([
             fetch(`${KASPA_API}/info/blockdag`).then(r => r.json()),
             fetch(`${KASPA_API}/info/hashrate`).then(r => r.json()),
             fetch(`${KASPA_API}/info/price`).then(r => r.json()),
             fetch(`${KASPA_API}/info/coinsupply`).then(r => r.json()),
         ]);
 
+        // Extract hashrate - API returns { hashrate: number }
+        const hashrate = hashrateData?.hashrate || 0;
+
+        // Extract price - API returns { price: number }
+        const price = priceData?.price || 0;
+
         return {
             blockCount: blockdag.blockCount,
             difficulty: blockdag.difficulty,
-            daaScore: blockdag.daaScore,
-            hashrate: typeof hashrate === 'string' ? parseFloat(hashrate) : hashrate.hashrate,
-            price: typeof price === 'string' ? parseFloat(price) : price.price,
+            daaScore: blockdag.virtualDaaScore, // Note: API uses virtualDaaScore
+            hashrate: hashrate,
+            price: price,
             circulatingSupply: supply.circulatingSupply,
         };
-    } catch {
+    } catch (error) {
+        console.error('Failed to fetch Kaspa data:', error);
         return null;
     }
 }
@@ -53,7 +60,7 @@ export async function GET(request: NextRequest) {
 Current Kaspa Network Data:
 - Block Count: ${kaspaData.blockCount?.toLocaleString()}
 - DAA Score: ${kaspaData.daaScore?.toLocaleString()}
-- Network Hashrate: ${(kaspaData.hashrate / 1e12).toFixed(2)} TH/s
+- Network Hashrate: ${kaspaData.hashrate.toFixed(2)} PH/s
 - KAS Price: $${kaspaData.price?.toFixed(4)} USD
 - Circulating Supply: ${(kaspaData.circulatingSupply / 1e9).toFixed(2)} billion KAS
 

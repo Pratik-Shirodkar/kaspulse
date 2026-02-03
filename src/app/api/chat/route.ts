@@ -43,11 +43,11 @@ async function getKaspaContext() {
             blockHeight: blueScore.blueScore,
             blockCount: blockdag.blockCount,
             difficulty: blockdag.difficulty,
-            hashrate: typeof hashrate === 'string' ? parseFloat(hashrate) : hashrate.hashrate,
-            price: typeof price === 'string' ? parseFloat(price) : price.price,
+            hashrate: hashrate?.hashrate || 0,
+            price: price?.price || 0,
             circulatingSupply: supply.circulatingSupply,
             maxSupply: supply.maxSupply,
-            daaScore: blockdag.daaScore,
+            daaScore: blockdag.virtualDaaScore,
         };
     } catch (error) {
         console.error('Failed to fetch Kaspa context:', error);
