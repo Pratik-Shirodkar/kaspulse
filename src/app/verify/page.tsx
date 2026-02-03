@@ -3,9 +3,10 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Check, X, Shield, Clock, Hash, Copy, Download } from 'lucide-react';
+import { Search, Check, X, Shield, Clock, Hash, Copy, Download, Wallet, FileCheck } from 'lucide-react';
 import { isValidHash, isValidTxId } from '@/lib/hash';
 import { verifyTransaction, getBlueScore } from '@/lib/kaspa-api';
+import { useProofHistory, StoredProof } from '@/components/ProofHistory';
 
 interface VerificationResult {
     isValid: boolean;
@@ -14,6 +15,10 @@ interface VerificationResult {
     blueScore?: number;
     txId?: string;
     error?: string;
+    source?: 'blockchain' | 'local';
+    signature?: string;
+    walletAddress?: string;
+    proofName?: string;
 }
 
 function VerifyContent() {
@@ -25,6 +30,7 @@ function VerifyContent() {
     const [result, setResult] = useState<VerificationResult | null>(null);
     const [currentBlueScore, setCurrentBlueScore] = useState<number>(0);
     const [copied, setCopied] = useState(false);
+    const { proofs } = useProofHistory();
 
     // Fetch current blue score
     useEffect(() => {
@@ -57,6 +63,26 @@ function VerifyContent() {
         setResult(null);
 
         try {
+            // FIRST: Check local proof history
+            const localProof = proofs.find(p =>
+                p.hash.toLowerCase() === query.toLowerCase() ||
+                p.merkleRoot?.toLowerCase() === query.toLowerCase()
+            );
+
+            if (localProof) {
+                setResult({
+                    isValid: true,
+                    hash: localProof.merkleRoot || localProof.hash,
+                    timestamp: localProof.timestamp,
+                    blueScore: localProof.blueScore,
+                    source: 'local',
+                    signature: localProof.signature,
+                    walletAddress: localProof.walletAddress,
+                    proofName: localProof.name,
+                });
+                return;
+            }
+
             // Check if it's a transaction ID or a hash
             if (isValidTxId(query)) {
                 // Verify as transaction
@@ -68,7 +94,8 @@ function VerifyContent() {
                         hash: query,
                         timestamp: txResult.transaction.block_time,
                         txId: query,
-                        blueScore: currentBlueScore // In real app, get from transaction
+                        blueScore: currentBlueScore,
+                        source: 'blockchain',
                     });
                 } else {
                     setResult({
@@ -78,13 +105,11 @@ function VerifyContent() {
                     });
                 }
             } else if (isValidHash(query)) {
-                // For demo: simulate hash verification
-                // In production, this would search for the hash in transaction payloads
+                // Hash not found locally or on blockchain
                 setResult({
-                    isValid: true,
+                    isValid: false,
                     hash: query,
-                    timestamp: Date.now() - Math.random() * 86400000, // Random past timestamp for demo
-                    blueScore: Math.floor(currentBlueScore - Math.random() * 10000)
+                    error: 'Hash not found. It may not have been anchored yet.'
                 });
             } else {
                 setResult({
@@ -235,9 +260,33 @@ Verified by KasPulse - https://kaspulse.app
                                     </motion.div>
                                     <h2 className="text-2xl font-bold text-[var(--success)]">Verified ✓</h2>
                                     <p className="text-white/60 mt-2">
-                                        This data exists on the Kaspa blockchain
+                                        {result.source === 'local'
+                                            ? 'Found in your proof history'
+                                            : 'This data exists on the Kaspa blockchain'
+                                        }
                                     </p>
+                                    {result.proofName && (
+                                        <p className="text-sm text-[var(--primary)] mt-1">
+                                            {result.proofName}
+                                        </p>
+                                    )}
                                 </div>
+
+                                {/* Source Badge */}
+                                {result.source && (
+                                    <div className="flex justify-center mb-6">
+                                        <span className={`px-3 py-1 rounded-full text-sm flex items-center gap-2 ${result.source === 'blockchain'
+                                                ? 'bg-[var(--primary)]/20 text-[var(--primary)]'
+                                                : 'bg-[var(--secondary)]/20 text-[var(--secondary)]'
+                                            }`}>
+                                            {result.source === 'blockchain' ? (
+                                                <><Shield size={14} /> On-Chain Verified</>
+                                            ) : (
+                                                <><FileCheck size={14} /> Local Proof</>
+                                            )}
+                                        </span>
+                                    </div>
+                                )}
 
                                 {/* Proof Details */}
                                 <div className="space-y-4">
@@ -277,6 +326,30 @@ Verified by KasPulse - https://kaspulse.app
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Wallet Signature Section */}
+                                    {result.signature && (
+                                        <div className="p-4 bg-[var(--success)]/10 rounded-lg border border-[var(--success)]/30">
+                                            <div className="flex items-center gap-2 text-[var(--success)] mb-2">
+                                                <Wallet size={16} />
+                                                <span className="font-semibold">Wallet Signed Proof</span>
+                                            </div>
+                                            <div className="space-y-2 text-sm">
+                                                <div>
+                                                    <span className="text-white/50">Wallet Address:</span>
+                                                    <code className="ml-2 font-mono text-xs">
+                                                        {result.walletAddress?.slice(0, 12)}...{result.walletAddress?.slice(-8)}
+                                                    </code>
+                                                </div>
+                                                <div>
+                                                    <span className="text-white/50">Signature:</span>
+                                                    <code className="ml-2 font-mono text-xs block mt-1 break-all text-white/70">
+                                                        {result.signature.slice(0, 40)}...
+                                                    </code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Actions */}
