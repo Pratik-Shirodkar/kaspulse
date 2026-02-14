@@ -53,13 +53,13 @@ export function isWalletAvailable(): boolean {
 
 // Get wallet name
 export function getWalletName(): string | null {
-    const provider = getWalletProvider();
-    if (!provider) return null;
+    if (typeof window === 'undefined') return null;
 
-    if (provider.isKasware) return 'Kasware';
+    // Check window.kasware first — most reliable indicator
+    if (window.kasware) return 'Kasware';
     if (window.kaspa) return 'Kaspa Wallet';
 
-    return 'Unknown Wallet';
+    return 'Wallet';
 }
 
 // Connect to wallet
@@ -82,9 +82,15 @@ export async function connectWallet(): Promise<WalletState> {
 
         try {
             const balanceInfo = await provider.getBalance();
-            balance = balanceInfo.total / 1e8; // Convert sompi to KAS
-        } catch {
-            console.warn('Could not fetch balance');
+            console.log('Raw balance from wallet:', JSON.stringify(balanceInfo));
+            // Kasware returns { confirmed, unconfirmed, total } in sompi
+            // But some versions may return values already in KAS
+            const rawTotal = balanceInfo.total;
+            // If the value is very large (> 1000), it's in sompi → convert
+            // If it's small, it's likely already in KAS
+            balance = rawTotal > 1000 ? rawTotal / 1e8 : rawTotal;
+        } catch (e) {
+            console.warn('Could not fetch balance:', e);
         }
 
         return {
@@ -178,8 +184,8 @@ export async function switchNetwork(network: 'kaspa-testnet' | 'kaspa-mainnet'):
 // Returns the transaction ID
 export async function sendTransaction(
     toAddress: string,
-    amountKas: number = 0.001, // Default 0.001 KAS (100000 sompi)
-    priorityFee: number = 0
+    amountKas: number = 1, // Default 1 KAS
+    priorityFeeKas: number = 0
 ): Promise<string> {
     const provider = getWalletProvider();
 
@@ -189,13 +195,48 @@ export async function sendTransaction(
 
     // Convert KAS to sompi (1 KAS = 100,000,000 sompi)
     const sompi = Math.floor(amountKas * 1e8);
+    const priorityFeesompi = Math.floor(priorityFeeKas * 1e8);
 
-    if (sompi < 10000) {
-        throw new Error('Amount too small. Minimum is 0.0001 KAS');
+    if (sompi < 20000000) {
+        throw new Error('Amount too small. Minimum is 0.2 KAS to avoid storage mass limits');
     }
 
+    // Detect network and fix address mismatch
+    let finalAddress = toAddress;
     try {
-        const txId = await provider.sendKaspa(toAddress, sompi, { priorityFee });
+        const network = await provider.getNetwork();
+        const isTestnet = network?.toLowerCase().includes('test');
+        const addressIsTestnet = toAddress.startsWith('kaspatest:');
+
+        // If network type doesn't match address prefix, fall back to self-transfer
+        if (isTestnet && !addressIsTestnet) {
+            const accounts = await provider.getAccounts();
+            if (accounts.length > 0) {
+                finalAddress = accounts[0];
+                console.log(`Network mismatch: wallet on testnet but address is mainnet. Using self-transfer: ${finalAddress}`);
+            }
+        } else if (!isTestnet && addressIsTestnet) {
+            const accounts = await provider.getAccounts();
+            if (accounts.length > 0) {
+                finalAddress = accounts[0];
+                console.log(`Network mismatch: wallet on mainnet but address is testnet. Using self-transfer: ${finalAddress}`);
+            }
+        }
+    } catch {
+        // If network detection fails, just use the provided address
+    }
+
+    console.log(`Sending Transaction:`);
+    console.log(`- To: ${finalAddress}`);
+    console.log(`- Amount: ${sompi} sompi (${amountKas} KAS)`);
+    console.log(`- Fee: ${priorityFeesompi} sompi (${priorityFeeKas} KAS)`);
+
+    try {
+        const txId = await provider.sendKaspa(finalAddress, sompi, {
+            priorityFee: priorityFeesompi,
+            // @ts-ignore - some wallet versions might use 'fee'
+            fee: priorityFeesompi
+        });
         return txId;
     } catch (error) {
         console.error('Transaction failed:', error);
@@ -223,8 +264,10 @@ export async function createOnChainAnchor(
     // Sign the hash first (this proves you anchored this specific data)
     const signature = await provider.signMessage(hash);
 
-    // Send minimal transaction (0.001 KAS = ~$0.0001)
-    const txId = await sendTransaction(toAddress, 0.001);
+    // Use a robust priority fee and sufficient amount to prevent errors
+    // Amount: 1 KAS (visible in wallet)
+    // Fee: 0.01 KAS (high priority)
+    const txId = await sendTransaction(toAddress, 1.0, 0.01);
 
     return { txId, signature };
 }

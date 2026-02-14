@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.981.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "@react-three/postprocessing": "^3.0.4",
     "@tanstack/react-query": "^5.90.20",
     "@types/crypto-js": "^4.2.2",
     "axios": "^1.13.4",
@@ -22,6 +25,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.7.0",
+    "three": "^0.182.0",
     "use-sound": "^5.0.0"
   },
   "devDependencies": {

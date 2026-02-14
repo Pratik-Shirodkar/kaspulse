@@ -57,10 +57,22 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
     // Check if wallet is installed on mount
     useEffect(() => {
+        let cancelled = false;
+
         const checkInstalled = async () => {
-            // Wait a bit for wallet injection
-            await new Promise(resolve => setTimeout(resolve, 100));
-            setIsInstalled(isWalletAvailable());
+            // Retry with increasing delays to wait for wallet extension injection
+            const delays = [100, 500, 1000, 2000];
+            for (const delay of delays) {
+                if (cancelled) return;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                if (isWalletAvailable()) {
+                    setIsInstalled(true);
+                    break;
+                }
+            }
+
+            if (!isWalletAvailable()) return;
+            setIsInstalled(true);
 
             // Check for existing connection
             const accounts = await getAccounts();
@@ -68,7 +80,6 @@ export function WalletProvider({ children }: WalletProviderProps) {
                 try {
                     const walletState = await connectWallet();
                     setState(walletState);
-                    // Get network
                     try {
                         const net = await getNetwork();
                         setNetwork(net);
@@ -82,6 +93,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         };
 
         checkInstalled();
+        return () => { cancelled = true; };
     }, []);
 
     const connect = useCallback(async () => {
@@ -128,7 +140,9 @@ export function WalletProvider({ children }: WalletProviderProps) {
             const provider = getWalletProvider();
             if (provider) {
                 const balanceInfo = await provider.getBalance();
-                setState(prev => ({ ...prev, balance: balanceInfo.total / 1e8 }));
+                const rawTotal = balanceInfo.total;
+                const bal = rawTotal > 1000 ? rawTotal / 1e8 : rawTotal;
+                setState(prev => ({ ...prev, balance: bal }));
             }
         } catch (err) {
             console.error('Failed to refresh balance:', err);

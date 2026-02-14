@@ -145,7 +145,14 @@ export default function AnchorPage() {
                     walletAddress = address;
                 } catch (error) {
                     console.error('On-chain anchor failed:', error);
-                    alert('Transaction failed. Check your balance and try again.');
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+
+                    if (errorMessage.includes('WebSocket') || errorMessage.includes('RPC') || errorMessage.includes('remote error')) {
+                        alert('⚠️ Wallet Network Error\n\nKasware lost connection to the Kaspa node.\n\nPlease try:\n1. Open Kasware Settings\n2. Switch network to Mainnet then back to Testnet\n3. Restart browser if issue persists');
+                    } else {
+                        alert('Transaction failed. Please check your balance and try again.');
+                    }
+
                     setIsProcessing(false);
                     return;
                 }

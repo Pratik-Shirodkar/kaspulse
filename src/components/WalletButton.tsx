@@ -21,10 +21,25 @@ export function WalletButton({ onConnect, onDisconnect }: WalletButtonProps) {
     const [showDropdown, setShowDropdown] = useState(false);
     const [walletAvailable, setWalletAvailable] = useState(false);
 
-    // Check for existing connection on mount
+    // Check for existing connection on mount — retry to wait for extension injection
     useEffect(() => {
+        let cancelled = false;
+
         const checkConnection = async () => {
-            setWalletAvailable(isWalletAvailable());
+            // Retry with increasing delays to wait for wallet extension injection
+            const delays = [100, 500, 1000, 2000];
+            for (const delay of delays) {
+                if (cancelled) return;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                if (isWalletAvailable()) {
+                    setWalletAvailable(true);
+                    break;
+                }
+            }
+
+            if (!isWalletAvailable()) return;
+            setWalletAvailable(true);
+
             const accounts = await getAccounts();
             if (accounts.length > 0) {
                 try {
@@ -38,6 +53,7 @@ export function WalletButton({ onConnect, onDisconnect }: WalletButtonProps) {
         };
 
         checkConnection();
+        return () => { cancelled = true; };
     }, [onConnect]);
 
     const handleConnect = useCallback(async () => {

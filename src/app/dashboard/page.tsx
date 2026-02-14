@@ -12,6 +12,8 @@ import { getNetworkStats } from '@/lib/kaspa-api';
 import { Blocks, Gauge, DollarSign, Coins, Activity, Zap, ChevronDown, ChevronUp, Database } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import SonicDAG from '@/components/SonicDAG';
+import { PulsePoll } from '@/components/PulsePoll';
 
 interface NetworkStats {
     blockCount: number;
@@ -81,6 +83,31 @@ export default function DashboardPage() {
                 </Link>
             </div>
 
+            {/* Live Block Ticker Banner */}
+            <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="glass-card p-3 mb-6 flex items-center justify-between shimmer-line"
+            >
+                <div className="flex items-center gap-3">
+                    <span className="live-dot" />
+                    <span className="text-xs text-white/50">LIVE</span>
+                    <span className="text-xs text-white/30">|</span>
+                    <Blocks size={14} className="text-[var(--primary)]" />
+                    <span className="text-sm font-mono font-bold text-[var(--primary)]">
+                        Block #{(stats?.blueScore || 0).toLocaleString()}
+                    </span>
+                </div>
+                <div className="flex items-center gap-3">
+                    <SonicDAG blueScore={stats?.blueScore || 0} />
+                    {lastUpdate && (
+                        <span className="text-xs text-white/40">
+                            Updated {lastUpdate.toLocaleTimeString()}
+                        </span>
+                    )}
+                </div>
+            </motion.div>
+
             {/* Header */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -95,16 +122,10 @@ export default function DashboardPage() {
                         Real-Time Data Track
                     </div>
                     <h1 className="text-3xl font-bold">
-                        <span className="text-[var(--primary)]">KasPulse</span> Data
+                        <span className="text-[var(--primary)]">KasPulse</span> Live
                     </h1>
-                    <p className="text-white/50">Live network analytics & data anchoring</p>
+                    <p className="text-white/50">Live network analytics, governance & data anchoring</p>
                 </div>
-                {lastUpdate && (
-                    <div className="ml-auto flex items-center gap-2 text-sm text-white/40">
-                        <span className="live-dot" />
-                        {lastUpdate.toLocaleTimeString()}
-                    </div>
-                )}
             </motion.div>
 
             {error && (
@@ -129,15 +150,28 @@ export default function DashboardPage() {
                 <AIInsightsPanel />
             </div>
 
+            <div className="section-divider" />
+
             {/* DAG Visualizer */}
             <div className="mb-8">
                 <DAGVisualizer />
             </div>
 
+            <div className="section-divider" />
+
             {/* Block Time Race */}
             <div className="mb-8">
                 <BlockTimeRace />
             </div>
+
+            <div className="section-divider" />
+
+            {/* Pulse Poll — Governance Voting */}
+            <div className="mb-8">
+                <PulsePoll />
+            </div>
+
+            <div className="section-divider" />
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">

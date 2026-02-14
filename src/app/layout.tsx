@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { ClientProviders } from "@/components/ClientProviders";
+import { LiveTickerWrapper } from "@/components/LiveTickerWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,12 +38,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-main min-h-screen`}
       >
+        <LiveTickerWrapper />
         <Header />
-        <main className="pt-24 md:pt-20 pb-8 relative z-10">
+        <main className="pt-32 md:pt-28 pb-8 relative z-10">
           <ClientProviders>
             {children}
           </ClientProviders>
         </main>
+        <Footer />
       </body>
     </html>
   );
