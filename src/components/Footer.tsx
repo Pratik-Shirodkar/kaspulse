@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Zap, Database, CreditCard, Gamepad2, FileCheck, Shield, ExternalLink } from 'lucide-react';
 import Link from 'next/link';

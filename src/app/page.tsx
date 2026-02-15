@@ -5,27 +5,27 @@ import {
   Activity, CreditCard, Gamepad2, Database, Zap, ArrowRight, Sparkles,
   Shield, Brain, Gauge, Blocks, Tv, Grid3x3, ChevronDown,
   Globe, Cpu, TrendingUp, Timer, Wallet, Award, Users,
-  BarChart3, Lock, Radio, MousePointer, Play
+  BarChart3, Lock, Radio, MousePointer, Play, Vote, FileCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { getBlueScore, getPrice, getHashrate } from '@/lib/kaspa-api';
 
-/* ═══════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    DATA
-   ═══════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const apps = [
   {
     id: 'data',
     name: 'KasPulse Live',
-    tagline: 'Real-Time Network Analytics & Governance',
-    description: 'Live blockchain stats, interactive 3D DAG visualizer, Sonic DAG audio experience, data anchoring with SHA-256 proofs, and on-chain community voting.',
+    tagline: 'Real-Time Network Analytics',
+    description: 'Live blockchain stats, interactive 3D DAG visualizer, Sonic DAG audio experience, AI-powered network insights, and block time racing.',
     icon: Database,
     href: '/dashboard',
     color: '#00ffff',
     gradient: ['#00ffff', '#0891b2'],
     track: 'Real-Time Data',
-    features: ['Live Stats', '3D DAG Visualizer', 'Sonic DAG', 'Pulse Poll', 'Data Anchoring', 'AI Insights'],
+    features: ['Live Stats', '3D DAG Visualizer', 'Sonic DAG', 'Block Time Race', 'AI Insights'],
     preview: '📊',
   },
   {
@@ -45,7 +45,7 @@ const apps = [
     id: 'game',
     name: 'KasHunter',
     tagline: 'Blockchain-Powered Arcade',
-    description: 'Real blockchain events drive gameplay — catch blocks, dodge forks, pay-to-revive with real KAS, and nuke the board.',
+    description: 'Real blockchain events drive gameplay - catch blocks, dodge forks, pay-to-revive with real KAS, and nuke the board.',
     icon: Gamepad2,
     href: '/game',
     color: '#8b5cf6',
@@ -57,14 +57,14 @@ const apps = [
   {
     id: 'kasstream',
     name: 'KasStream',
-    tagline: 'Pay-Per-Second Video Streaming',
-    description: 'Streaming payments unlock video in real-time. Pay with your wallet, video unblurs instantly. Only possible on a 1s block chain.',
+    tagline: 'Content Creator Platform',
+    description: 'Creators publish pay-per-second video content. Viewers pay directly to the creator\'s wallet — no middleman. Shareable links, earnings dashboard, and instant 1s finality.',
     icon: Tv,
     href: '/kasstream',
     color: '#f59e0b',
     gradient: ['#f59e0b', '#d97706'],
     track: 'Streaming Payments',
-    features: ['Pay-Per-Second', 'Live Unblur', 'Wallet Payments', 'Usage Metering'],
+    features: ['Creator Platform', 'Pay-Per-Second', 'Direct Wallet Pay', 'Shareable Links', 'Earnings Dashboard'],
     preview: '📺',
   },
   {
@@ -80,18 +80,44 @@ const apps = [
     features: ['Live Grid', 'Clan Wars', 'TX Feed', 'Throughput Proof'],
     preview: '🎨',
   },
+  {
+    id: 'poll',
+    name: 'Pulse Poll',
+    tagline: 'On-Chain Governance & Voting',
+    description: 'Community votes are real Kaspa transactions. Transparent, immutable, instant results with 1-second finality. Decentralized governance in action.',
+    icon: Vote,
+    href: '/poll',
+    color: '#f97316',
+    gradient: ['#f97316', '#ea580c'],
+    track: 'Governance',
+    features: ['On-Chain Votes', 'Real-Time Results', 'TX-Based Polling', 'Wallet Auth'],
+    preview: '🗳️',
+  },
+  {
+    id: 'anchor',
+    name: 'Data Anchor',
+    tagline: 'Blockchain Proof & Verification',
+    description: 'Hash any file or text with SHA-256 and anchor it to Kaspa. On-chain proofs, batch anchoring, Merkle trees, and AI document analysis.',
+    icon: FileCheck,
+    href: '/anchor',
+    color: '#06b6d4',
+    gradient: ['#06b6d4', '#0891b2'],
+    track: 'Data Integrity',
+    features: ['SHA-256 Hashing', 'On-Chain Proofs', 'Batch Anchoring', 'AI Doc Analysis'],
+    preview: '🔏',
+  },
 ];
 
 const statCounters = [
-  { label: 'Track Categories', value: 5, suffix: '', color: '#00ffff', icon: Award },
-  { label: 'Interactive Modules', value: 12, suffix: '+', color: '#8b5cf6', icon: MousePointer },
+  { label: 'Track Categories', value: 7, suffix: '', color: '#00ffff', icon: Award },
+  { label: 'Interactive Modules', value: 15, suffix: '+', color: '#8b5cf6', icon: MousePointer },
   { label: 'Block Time', value: 1, suffix: 's', color: '#10b981', icon: Timer },
   { label: 'AI Modules', value: 4, suffix: '', color: '#f59e0b', icon: Brain },
 ];
 
-/* ═══════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    HERO PARTICLE CANVAS
-   ═══════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function HeroCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -205,9 +231,9 @@ function HeroCanvas() {
   return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" style={{ opacity: 0.7 }} />;
 }
 
-/* ═══════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    LIVE STATS
-   ═══════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function useLiveStats() {
   const [stats, setStats] = useState({ blueScore: 0, price: 0, hashrate: 0 });
   const [prevBlueScore, setPrevBlueScore] = useState(0);
@@ -234,9 +260,9 @@ function useLiveStats() {
   return { stats, blockFlash };
 }
 
-/* ═══════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    ANIMATED COUNTER
-   ═══════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function AnimatedNum({ value, prefix = '', suffix = '', decimals = 0 }: {
   value: number; prefix?: string; suffix?: string; decimals?: number;
 }) {
@@ -260,9 +286,9 @@ function AnimatedNum({ value, prefix = '', suffix = '', decimals = 0 }: {
   return <>{prefix}{decimals > 0 ? display.toFixed(decimals) : Math.floor(display).toLocaleString()}{suffix}</>;
 }
 
-/* ═══════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    MAIN PAGE
-   ═══════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 export default function LauncherPage() {
   const { stats, blockFlash } = useLiveStats();
   const [mounted, setMounted] = useState(false);
@@ -273,7 +299,7 @@ export default function LauncherPage() {
     <div className="landing-page">
       <HeroCanvas />
 
-      {/* ═══════════ HERO ═══════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â• HERO â•â•â•â•â•â•â•â•â•â•â• */}
       <section className="relative z-10 min-h-[85vh] flex flex-col items-center justify-center text-center px-4">
         {/* Hackathon badge */}
         <motion.div
@@ -318,7 +344,7 @@ export default function LauncherPage() {
           transition={{ delay: 0.5 }}
           className="lp-subdesc"
         >
-          Real-time analytics · Instant payments · Blockchain gaming · Streaming micropayments · AI insights
+          Real-time analytics &middot; Instant payments &middot; Blockchain gaming &middot; Streaming micropayments &middot; AI insights
         </motion.p>
 
         {/* CTA row */}
@@ -346,9 +372,9 @@ export default function LauncherPage() {
           transition={{ delay: 0.8 }}
           className="lp-live-strip"
         >
-          <div className="lp-live-chip">
-            <span className="live-dot" />
-            <span>Mainnet Live</span>
+          <div className="flex items-center gap-2">
+            <span className="lp-live-dot" />
+            <span className="text-xs font-bold text-cyan-400 tracking-wider">TESTNET LIVE</span>
           </div>
 
           {stats.blueScore > 0 && (
@@ -376,7 +402,7 @@ export default function LauncherPage() {
               <Cpu size={13} className="text-[var(--warning)]" />
               <span className="lp-live-label">Hashrate</span>
               <span className="lp-live-value text-[var(--warning)]">
-                {(stats.hashrate / 1e15).toFixed(2)} PH/s
+                {(stats.hashrate / 1000).toFixed(2)} PH/s
               </span>
             </div>
           )}
@@ -395,7 +421,7 @@ export default function LauncherPage() {
         </motion.div>
       </section>
 
-      {/* ═══════════ WHAT IT IS ═══════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â• WHAT IT IS â•â•â•â•â•â•â•â•â•â•â• */}
       <section className="relative z-10 max-w-6xl mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -407,11 +433,11 @@ export default function LauncherPage() {
           <div className="lp-what-text">
             <span className="lp-section-badge">WHAT IS KASPULSE?</span>
             <h2 className="text-3xl md:text-4xl font-extrabold leading-tight mt-3 mb-4">
-              Five modules that prove Kaspa is{' '}
+              Seven modules that prove Kaspa is{' '}
               <span className="gradient-text">production-ready</span>
             </h2>
             <p className="text-white/40 leading-relaxed mb-6">
-              KasPulse is not a single dApp — it's a full platform spanning real-time data,
+              KasPulse is not a single dApp &mdash; it&apos;s a full platform spanning real-time data,
               commerce, gaming, streaming, and community. Every user action triggers a real
               Kaspa testnet transaction. No mocks. No simulations.
             </p>
@@ -447,8 +473,8 @@ export default function LauncherPage() {
         </motion.div>
       </section>
 
-      {/* ═══════════ APP SHOWCASE ═══════════ */}
-      <section className="relative z-10 max-w-6xl mx-auto px-4 py-12" id="apps">
+      {/* ——————————— APP SHOWCASE ——————————— */}
+      <section className="relative z-10 max-w-7xl mx-auto px-4 py-12" id="apps">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -457,7 +483,7 @@ export default function LauncherPage() {
         >
           <span className="lp-section-badge">THE PLATFORM</span>
           <h2 className="text-3xl md:text-4xl font-extrabold mt-3 mb-3">
-            Five Apps. <span className="gradient-text">One Vision.</span>
+            Seven Apps. <span className="gradient-text">One Vision.</span>
           </h2>
           <p className="text-white/35 max-w-lg mx-auto text-sm">
             Each module is a fully functional dApp powered by real Kaspa transactions.
@@ -510,7 +536,7 @@ export default function LauncherPage() {
                 {/* Launch CTA */}
                 <div className="lp-app-cta" style={{ color: app.color }}>
                   <span>Launch</span>
-                  <ArrowRight size={15} className="transition-transform group-hover:translate-x-1.5" />
+                  <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
                 </div>
               </Link>
             </motion.div>
@@ -518,7 +544,7 @@ export default function LauncherPage() {
         </div>
       </section>
 
-      {/* ═══════════ WHY KASPULSE ═══════════ */}
+      {/* ——————————— WHY KASPULSE ——————————— */}
       <section className="relative z-10 max-w-5xl mx-auto px-4 py-16">
         <div className="section-divider mb-10" />
         <motion.div
@@ -537,7 +563,7 @@ export default function LauncherPage() {
           {[
             {
               icon: Gauge, title: 'Unmatched Speed', color: '#00ffff',
-              desc: '1 block per second — 600× faster than Bitcoin. Every transaction, vote, and pixel confirms in real-time on Kaspa\'s BlockDAG.',
+              desc: '1 block per second — 600x faster than Bitcoin. Every transaction, vote, and pixel confirms in real-time on Kaspa\'s BlockDAG.',
               stat: '1s', statLabel: 'Block Time', extra: '32 blocks/sec theoretical max'
             },
             {
@@ -575,7 +601,7 @@ export default function LauncherPage() {
         </div>
       </section>
 
-      {/* ═══════════ TECH STACK STRIP ═══════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â•â• TECH STACK STRIP â•â•â•â•â•â•â•â•â•â•â• */}
       <section className="relative z-10 max-w-5xl mx-auto px-4 py-8">
         <motion.div
           initial={{ opacity: 0 }}
@@ -606,44 +632,7 @@ export default function LauncherPage() {
         </motion.div>
       </section>
 
-      {/* ═══════════ BOTTOM CTA ═══════════ */}
-      <section className="relative z-10 max-w-4xl mx-auto px-4 pb-24 pt-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="lp-cta"
-        >
-          <div className="lp-cta-glow" />
-          <div className="lp-cta-glow-2" />
 
-          <motion.div
-            initial={{ scale: 0.95 }}
-            whileInView={{ scale: 1 }}
-            viewport={{ once: true }}
-            className="relative z-10"
-          >
-            <h2 className="text-2xl md:text-4xl font-extrabold mb-3">
-              Ready to pulse the <span className="gradient-text">DAG</span>?
-            </h2>
-            <p className="text-white/35 mb-8 max-w-md mx-auto text-sm leading-relaxed">
-              Connect your Kaspa wallet and explore the full power of 1-second blocks.
-              Every button press is a real testnet transaction.
-            </p>
-            <div className="flex items-center justify-center gap-4 flex-wrap">
-              <Link href="/dashboard" className="lp-btn-primary group">
-                <Globe size={18} />
-                Explore Dashboard
-                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link href="/commerce" className="lp-btn-ghost">
-                <CreditCard size={16} />
-                Commerce Suite
-              </Link>
-            </div>
-          </motion.div>
-        </motion.div>
-      </section>
     </div>
   );
 }

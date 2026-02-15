@@ -15,10 +15,10 @@ interface ChainData {
 // Only Proof-of-Work chains for fair comparison - Kaspa is the FASTEST PoW chain
 const chains: ChainData[] = [
     { name: 'Kaspa', blockTime: 1, color: '#00ffff', icon: '⚡', consensus: 'PoW' },
-    { name: 'Litecoin', blockTime: 150, color: '#345D9D', icon: 'Ł', consensus: 'PoW' },
-    { name: 'Dogecoin', blockTime: 60, color: '#C2A633', icon: 'Ð', consensus: 'PoW' },
+    { name: 'Litecoin', blockTime: 150, color: '#345D9D', icon: 'Å', consensus: 'PoW' },
+    { name: 'Dogecoin', blockTime: 60, color: '#C2A633', icon: 'Ã', consensus: 'PoW' },
     { name: 'Bitcoin Cash', blockTime: 600, color: '#8DC351', icon: '₿', consensus: 'PoW' },
-    { name: 'Ethereum Classic', blockTime: 13, color: '#3AB83A', icon: 'Ξ', consensus: 'PoW' },
+    { name: 'Ethereum Classic', blockTime: 13, color: '#3AB83A', icon: 'Îž', consensus: 'PoW' },
     { name: 'Bitcoin', blockTime: 600, color: '#F7931A', icon: '₿', consensus: 'PoW' },
 ];
 
@@ -81,7 +81,7 @@ export function BlockTimeRace() {
                         className={`px-3 py-1 rounded text-sm ${isRacing ? 'bg-white/10' : 'bg-[var(--success)] text-black'
                             }`}
                     >
-                        {isRacing ? '⏸ Pause' : '▶ Resume'}
+                        {isRacing ? 'â¸ Pause' : '▶ Resume'}
                     </button>
                     <button
                         onClick={resetRace}
@@ -142,7 +142,7 @@ export function BlockTimeRace() {
                                     animate={{ scale: 1 }}
                                     className="absolute -right-2 -top-2 bg-[var(--primary)] text-black text-xs px-2 py-1 rounded-full font-bold"
                                 >
-                                    🏆 FASTEST
+                                    ðŸ† FASTEST
                                 </motion.div>
                             )}
                         </motion.div>

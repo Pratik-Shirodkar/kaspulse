@@ -710,7 +710,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+  background: linear-gradient(135deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
   transform: translateX(-100%);
   transition: transform 0.6s;
 }
@@ -875,38 +875,44 @@ body {
 }
 
 /* ─── App Cards Grid ─── */
+/* ─── App Cards Grid ─── */
 .lp-apps-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 16px;
 }
 
-.lp-app-card-hero {
-  grid-column: span 2;
-}
-
-@media (max-width: 900px) {
-  .lp-apps-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .lp-app-card-hero {
-    grid-column: span 2;
-  }
-}
-
-@media (max-width: 640px) {
-  .lp-apps-grid {
-    grid-template-columns: 1fr;
-  }
-  .lp-app-card-hero {
-    grid-column: span 1;
-  }
-}
-
 .lp-app-card {
+  /* Default: 4 columns */
+  width: calc(25% - 12px);
+  min-width: 260px;
   border-radius: 20px;
   overflow: hidden;
 }
+
+@media (max-width: 1200px) {
+  .lp-app-card {
+    /* 3 columns */
+    width: calc(33.333% - 11px);
+  }
+}
+
+@media (max-width: 900px) {
+  .lp-app-card {
+    /* 2 columns */
+    width: calc(50% - 8px);
+  }
+}
+
+@media (max-width: 600px) {
+  .lp-app-card {
+    /* 1 column */
+    width: 100%;
+  }
+}
+
+
 
 .lp-app-inner {
   display: flex;

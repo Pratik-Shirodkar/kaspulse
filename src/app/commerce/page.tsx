@@ -377,7 +377,7 @@ export default function CommercePage() {
                                     </div>
                                     <div className="text-xs text-white/40 mt-2 uppercase tracking-widest">
                                         {speedTestPhase === 'idle' && 'Ready'}
-                                        {speedTestPhase === 'waiting' && '⏳ Waiting for payment...'}
+                                        {speedTestPhase === 'waiting' && 'â³ Waiting for payment...'}
                                         {speedTestPhase === 'detected' && '🔄 Confirming...'}
                                         {speedTestPhase === 'done' && '✅ Confirmed!'}
                                     </div>

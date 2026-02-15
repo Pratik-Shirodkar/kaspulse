@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { LiveTicker } from './LiveTicker';
 

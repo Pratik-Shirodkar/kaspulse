@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { WalletButton } from './WalletButton';
-import { Activity, FileCheck, Shield, Zap, Home, CreditCard, Gamepad2, Blocks, Tv, Grid3x3 } from 'lucide-react';
+import { Activity, FileCheck, Shield, Zap, Home, CreditCard, Gamepad2, Blocks, Tv, Grid3x3, Vote } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { getBlueScore } from '@/lib/kaspa-api';
@@ -15,6 +15,7 @@ const navLinks = [
     { href: '/game', label: 'Play', icon: Gamepad2 },
     { href: '/kasstream', label: 'Stream', icon: Tv },
     { href: '/pixelwar', label: 'Pixels', icon: Grid3x3 },
+    { href: '/poll', label: 'Vote', icon: Vote },
     { href: '/anchor', label: 'Anchor', icon: FileCheck },
     { href: '/verify', label: 'Verify', icon: Shield },
 ];
@@ -40,7 +41,7 @@ export function Header() {
 
     return (
         <header className="fixed top-8 left-0 right-0 z-50 bg-[var(--background)]/80 backdrop-blur-xl" style={{ borderBottom: '1px solid rgba(0, 255, 255, 0.06)' }}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="w-full px-4 sm:px-6">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2 group">

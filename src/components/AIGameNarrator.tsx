@@ -45,7 +45,7 @@ export function AIGameNarrator({ score, blocksCollected, missedBlocks, isPlaying
                 break;
             case 'block_missed':
                 if (missedBlocks >= 4) {
-                    text = `⚠️ Last chance! One more miss and it's over!`;
+                    text = `⚠ï¸ Last chance! One more miss and it's over!`;
                 } else if (missedBlocks >= 2) {
                     text = `Oops! ${5 - missedBlocks} lives remaining!`;
                 }

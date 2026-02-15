@@ -236,10 +236,10 @@ export function PixelWar() {
                                 }`}
                             style={{ boxShadow: painting ? 'none' : '0 0 20px rgba(0,255,255,0.3)' }}
                         >
-                            {painting ? '⏳ Sending TX...' : '🎨 Paint a Pixel (1 KAS)'}
+                            {painting ? 'â³ Sending TX...' : '🎨 Paint a Pixel (1 KAS)'}
                         </button>
                         {paintError && (
-                            <p className="mt-2 text-xs text-red-400">⚠️ {paintError}</p>
+                            <p className="mt-2 text-xs text-red-400">⚠ï¸ {paintError}</p>
                         )}
                     </div>
                 </div>

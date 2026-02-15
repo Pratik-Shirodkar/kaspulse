@@ -251,7 +251,7 @@ export function FlashTix() {
                                 : 'bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-black hover:brightness-110'
                             }`}
                     >
-                        {buyingState === 'confirming' ? '⏳ Confirming on DAG...'
+                        {buyingState === 'confirming' ? 'â³ Confirming on DAG...'
                             : buyingState === 'confirmed' ? `✅ Ticket #${userTicket} Secured!`
                                 : `🎫 Buy Ticket (${TICKET_PRICE} KAS)`}
                     </button>
@@ -276,7 +276,7 @@ export function FlashTix() {
             {/* Buy Error */}
             {buyError && (
                 <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
-                    ⚠️ {buyError}
+                    ⚠ï¸ {buyError}
                 </div>
             )}
 

@@ -20,7 +20,7 @@ interface VendingItem {
 
 const ITEMS: VendingItem[] = [
     { id: 'art1', name: 'Neon Kaspa Logo', description: 'HD vector logo with glow effect', price: 2, emoji: '🎨', category: 'Digital Art', color: '#00ffff' },
-    { id: 'code1', name: 'Smart Contract Template', description: 'KRC-20 token template (Solidity-like)', price: 5, emoji: '📝', category: 'Code', color: '#8b5cf6' },
+    { id: 'code1', name: 'Smart Contract Template', description: 'KRC-20 token template (Solidity-like)', price: 5, emoji: 'ðŸ“', category: 'Code', color: '#8b5cf6' },
     { id: 'nft1', name: 'Genesis Block NFT', description: 'Minted from block #1 metadata', price: 10, emoji: '💎', category: 'Collectible', color: '#f472b6' },
     { id: 'data1', name: 'Network Snapshot', description: 'Full DAG state export (JSON)', price: 3, emoji: '📊', category: 'Data', color: '#10b981' },
     { id: 'pass1', name: 'VIP Access Pass', description: '24h premium analytics dashboard', price: 1, emoji: '🔑', category: 'Access', color: '#facc15' },
@@ -84,7 +84,7 @@ export function VendingMachine() {
                         exit={{ opacity: 0 }}
                         className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center"
                     >
-                        ⚠️ {error}
+                        ⚠ï¸ {error}
                     </motion.div>
                 )}
             </AnimatePresence>

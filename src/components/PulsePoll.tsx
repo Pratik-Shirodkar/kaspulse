@@ -6,12 +6,20 @@ import { Vote, Zap, TrendingUp, TrendingDown, Users, Shield, Clock } from 'lucid
 import { QRCodeSVG } from 'qrcode.react';
 import { sendTransaction } from '@/lib/wallet';
 
-const VOTE_ADDRESS = 'kaspa:qrcz0ha5krc2y3snq6vm6quyqdh7fcs8gkx0f5z5v4ld0s32l4p850cvk8udv';
+const DEFAULT_VOTE_ADDRESS = 'kaspa:qrcz0ha5krc2y3snq6vm6quyqdh7fcs8gkx0f5z5v4ld0s32l4p850cvk8udv';
 
 interface VoteEvent {
     side: 'bull' | 'bear';
     hash: string;
     time: number;
+}
+
+interface PulsePollProps {
+    question?: string;
+    optionA?: string;
+    optionB?: string;
+    wallet?: string;
+    isDemo?: boolean;
 }
 
 function generateHash(): string {
@@ -21,7 +29,13 @@ function generateHash(): string {
     return h;
 }
 
-export function PulsePoll() {
+export function PulsePoll({
+    question = "Should Kaspa increase block rewards?",
+    optionA = "YES",
+    optionB = "NO",
+    wallet = DEFAULT_VOTE_ADDRESS,
+    isDemo = false
+}: PulsePollProps) {
     const [votesBull, setVotesBull] = useState(142);
     const [votesBear, setVotesBear] = useState(89);
     const [recentVotes, setRecentVotes] = useState<VoteEvent[]>([]);
@@ -32,7 +46,7 @@ export function PulsePoll() {
     const [voteError, setVoteError] = useState<string | null>(null);
 
     const total = votesBull + votesBear;
-    const percentBull = Math.round((votesBull / total) * 100);
+    const percentBull = total > 0 ? Math.round((votesBull / total) * 100) : 50;
     const percentBear = 100 - percentBull;
 
     // Simulate live voting from other users
@@ -63,7 +77,7 @@ export function PulsePoll() {
         setVoteError(null);
 
         try {
-            const txHash = await sendTransaction(VOTE_ADDRESS, 1);
+            const txHash = await sendTransaction(wallet, 1);
 
             if (side === 'bull') setVotesBull(v => v + 1);
             else setVotesBear(v => v + 1);
@@ -77,7 +91,7 @@ export function PulsePoll() {
         } finally {
             setVoting(false);
         }
-    }, [voting, userVoted]);
+    }, [voting, userVoted, wallet]);
 
     return (
         <div className="glass-card p-6 relative overflow-hidden">
@@ -91,10 +105,11 @@ export function PulsePoll() {
             <div className="mb-5">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                     <Vote className="text-[var(--primary)]" size={20} />
-                    Pulse Poll — Kaspathon Governance
+                    Pulse Poll — {isDemo ? 'Kaspathon Governance' : 'Community Vote'}
                 </h3>
                 <p className="text-sm text-white/50 mt-0.5">
-                    &quot;Should Kaspa increase block rewards?&quot; — addressing <strong className="text-[var(--primary)]">KaspaVote</strong>
+                    &quot;{question}&quot;
+                    {isDemo && <> — addressing <strong className="text-[var(--primary)]">KaspaVote</strong></>}
                 </p>
             </div>
 
@@ -130,7 +145,7 @@ export function PulsePoll() {
                     <div>
                         <div className="flex items-center gap-1.5">
                             <TrendingUp size={16} className="text-[var(--primary)]" />
-                            <span className="font-bold text-[var(--primary)] text-lg">YES</span>
+                            <span className="font-bold text-[var(--primary)] text-lg">{optionA}</span>
                         </div>
                         <div className="text-xs text-white/60">{votesBull} votes ({percentBull}%)</div>
                     </div>
@@ -149,7 +164,7 @@ export function PulsePoll() {
                 >
                     <div className="text-right">
                         <div className="flex items-center gap-1.5 justify-end">
-                            <span className="font-bold text-red-400 text-lg">NO</span>
+                            <span className="font-bold text-red-400 text-lg">{optionB}</span>
                             <TrendingDown size={16} className="text-red-400" />
                         </div>
                         <div className="text-xs text-white/60">{votesBear} votes ({percentBear}%)</div>
@@ -166,7 +181,7 @@ export function PulsePoll() {
                 <div className="text-center">
                     <div className="inline-block bg-white p-2 rounded-xl mb-2">
                         <QRCodeSVG
-                            value={`kaspa:${VOTE_ADDRESS.replace('kaspa:', '')}?amount=1&message=VOTE_YES`}
+                            value={`kaspa:${wallet.replace('kaspa:', '')}?amount=1&message=VOTE_A`}
                             size={80}
                             level="M"
                         />
@@ -181,7 +196,7 @@ export function PulsePoll() {
                                 : 'bg-[var(--primary)]/20 text-[var(--primary)] hover:bg-[var(--primary)]/30 border border-[var(--primary)]/20'
                             }`}
                     >
-                        {userVoted === 'bull' ? '✓ Voted YES' : voting ? '⏳ Sending TX...' : '👍 Vote YES (1 KAS)'}
+                        {userVoted === 'bull' ? `✓ Voted ${optionA}` : voting ? 'â ³ Sending TX...' : `ðŸ‘  Vote ${optionA} (1 KAS)`}
                     </button>
                 </div>
 
@@ -189,7 +204,7 @@ export function PulsePoll() {
                 <div className="text-center">
                     <div className="inline-block bg-white p-2 rounded-xl mb-2">
                         <QRCodeSVG
-                            value={`kaspa:${VOTE_ADDRESS.replace('kaspa:', '')}?amount=1&message=VOTE_NO`}
+                            value={`kaspa:${wallet.replace('kaspa:', '')}?amount=1&message=VOTE_B`}
                             size={80}
                             level="M"
                         />
@@ -204,7 +219,7 @@ export function PulsePoll() {
                                 : 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/20'
                             }`}
                     >
-                        {userVoted === 'bear' ? '✓ Voted NO' : voting ? '⏳ Sending TX...' : '👎 Vote NO (1 KAS)'}
+                        {userVoted === 'bear' ? `✓ Voted ${optionB}` : voting ? 'â ³ Sending TX...' : `👎 Vote ${optionB} (1 KAS)`}
                     </button>
                 </div>
             </div>
@@ -212,7 +227,7 @@ export function PulsePoll() {
             {/* Vote Error Banner */}
             {voteError && (
                 <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
-                    ⚠️ {voteError}
+                    ⚠ï¸  {voteError}
                 </div>
             )}
 
@@ -246,7 +261,7 @@ export function PulsePoll() {
                                     <span className="font-mono text-white/40">{v.hash.slice(0, 8)}...</span>
                                 </div>
                                 <span className={v.side === 'bull' ? 'text-[var(--primary)]' : 'text-red-400'}>
-                                    {v.side === 'bull' ? 'YES' : 'NO'}
+                                    {v.side === 'bull' ? optionA : optionB}
                                 </span>
                             </motion.div>
                         ))}

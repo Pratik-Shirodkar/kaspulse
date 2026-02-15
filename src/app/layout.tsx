@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
@@ -25,6 +25,11 @@ export const metadata: Metadata = {
     title: "KasPulse - AI-Powered Kaspa Ecosystem",
     description: "The Super App for Kaspa with AI-powered blockchain insights",
     type: "website",
+  },
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
   },
 };
 

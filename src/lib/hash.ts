@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js';
+﻿import CryptoJS from 'crypto-js';
 
 // Hash a string using SHA-256
 export function hashString(text: string): string {

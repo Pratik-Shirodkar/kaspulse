@@ -13,7 +13,6 @@ import { Blocks, Gauge, DollarSign, Coins, Activity, Zap, ChevronDown, ChevronUp
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import SonicDAG from '@/components/SonicDAG';
-import { PulsePoll } from '@/components/PulsePoll';
 
 interface NetworkStats {
     blockCount: number;
@@ -118,13 +117,14 @@ export default function DashboardPage() {
                     <Database size={28} className="text-[var(--primary)]" />
                 </div>
                 <div>
-                    <div className="text-xs px-2 py-1 rounded bg-[var(--primary)]/20 text-[var(--primary)] inline-block mb-1">
-                        Real-Time Data Track
+                    <div className="text-xs px-2 py-1 rounded bg-[var(--primary)]/20 text-[var(--primary)] inline-flex items-center gap-2 mb-1">
+                        <span className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
+                        Connected to Kaspa Testnet
                     </div>
                     <h1 className="text-3xl font-bold">
                         <span className="text-[var(--primary)]">KasPulse</span> Live
                     </h1>
-                    <p className="text-white/50">Live network analytics, governance & data anchoring</p>
+                    <p className="text-white/50">Live network analytics, AI insights & blockchain visualization</p>
                 </div>
             </motion.div>
 
@@ -166,13 +166,6 @@ export default function DashboardPage() {
 
             <div className="section-divider" />
 
-            {/* Pulse Poll — Governance Voting */}
-            <div className="mb-8">
-                <PulsePoll />
-            </div>
-
-            <div className="section-divider" />
-
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <TransactionFeed />
@@ -202,21 +195,6 @@ export default function DashboardPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            {/* Quick Actions Footer */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="glass-card p-6 text-center"
-            >
-                <h3 className="text-lg font-semibold mb-4">Ready to Anchor Data?</h3>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link href="/anchor" className="btn-primary">Anchor Single File</Link>
-                    <Link href="/anchor#batch" className="btn-secondary">Batch Anchor Files</Link>
-                    <Link href="/verify" className="btn-secondary">Verify Proof</Link>
-                </div>
-            </motion.div>
         </div>
     );
 }

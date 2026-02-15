@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { AIChat } from './AIChat';
 import { WalletProvider } from './WalletProvider';

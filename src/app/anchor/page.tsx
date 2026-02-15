@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -148,7 +148,7 @@ export default function AnchorPage() {
                     const errorMessage = error instanceof Error ? error.message : String(error);
 
                     if (errorMessage.includes('WebSocket') || errorMessage.includes('RPC') || errorMessage.includes('remote error')) {
-                        alert('⚠️ Wallet Network Error\n\nKasware lost connection to the Kaspa node.\n\nPlease try:\n1. Open Kasware Settings\n2. Switch network to Mainnet then back to Testnet\n3. Restart browser if issue persists');
+                        alert('⚠ï¸ Wallet Network Error\n\nKasware lost connection to the Kaspa node.\n\nPlease try:\n1. Open Kasware Settings\n2. Switch network to Mainnet then back to Testnet\n3. Restart browser if issue persists');
                     } else {
                         alert('Transaction failed. Please check your balance and try again.');
                     }
@@ -424,7 +424,7 @@ export default function AnchorPage() {
 
                                 {onChainMode && isConnected && (
                                     <p className="text-xs text-white/40 text-center mt-3">
-                                        Cost: ~0.001 KAS • Network: {network === 'kaspa-mainnet' ? 'Mainnet' : 'Testnet'}
+                                        Cost: ~0.001 KAS &bull; Network: {network === 'kaspa-mainnet' ? 'Mainnet' : 'Testnet'}
                                     </p>
                                 )}
                             </motion.div>

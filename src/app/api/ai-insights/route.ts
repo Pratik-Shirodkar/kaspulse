@@ -1,4 +1,4 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+﻿import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { NextRequest, NextResponse } from 'next/server';
 
 const KASPA_API = 'https://api.kaspa.org';

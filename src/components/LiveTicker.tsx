@@ -41,9 +41,9 @@ export function LiveTicker() {
                     if (score % 5 === 0) {
                         const shouts = [
                             '📢 Hello from the Kaspa network!',
-                            '🏆 KasPulse — Built for Kaspathon 2026',
+                            'ðŸ† KasPulse — Built for Kaspathon 2026',
                             '⚡ Kaspa: Where 1-second blocks are the norm',
-                            '🌐 The fastest L1 blockchain in existence',
+                            'ðŸŒ The fastest L1 blockchain in existence',
                             '🎮 Try KasHunter — Catch blocks in real-time!',
                             '💰 KasPoint: Instant merchant payments',
                             '🔊 Enable Sonic DAG to hear the blockchain!',
