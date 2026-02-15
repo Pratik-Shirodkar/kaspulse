@@ -17,19 +17,6 @@ Every module uses **real wallet transactions** on Kaspa Testnet. No mocks. No si
 
 ---
 
-## 🏆 Tracks Targeted
-
-| Track | Modules | Prize Potential |
-|-------|---------|-----------------|
-| **Main Track** | All 7 modules as a unified ecosystem | Up to 35,000 KAS |
-| **Payments & Commerce** | KasStream, FlashTix, KasPoint, Vending Machine | 16,500 KAS |
-| **Gaming & Interactive** | KasHunter, PixelWar | 16,500 KAS |
-| **Real-Time Data** | Dashboard, DAG Visualizer, AI Insights, LiveTicker | 16,500 KAS |
-| **Best UX/UI** | Premium "Neon Pulse" design system | 10,000 KAS |
-| **Most Creative** | 7-module super-app concept | 10,000 KAS |
-
----
-
 ## 🎯 The 7 Modules
 
 ### 1. 📊 Dashboard (`/dashboard`) — Real-Time Data Track
@@ -257,21 +244,6 @@ This project was developed with assistance from **AI coding tools** (Google Gemi
 - **Visual design**: Color palette, animation choices, and layout decisions
 
 All AI-generated code was **reviewed, tested, and customized** for the specific requirements of this hackathon. The developer maintained full understanding and control of the codebase throughout development.
-
----
-
-## 📋 Submission Checklist
-
-- [x] Open source repository (GitHub)
-- [x] Comprehensive README with setup instructions
-- [x] AI usage clearly documented
-- [x] Live demo hosted on Vercel
-- [x] 7 distinct modules with real Kaspa integration
-- [x] Wallet connection support (Kasware)
-- [x] Real-time data from Kaspa API
-- [x] Premium UX/UI design
-- [ ] Demo video (3 min)
-- [ ] Screenshot for thumbnail
 
 ---
 
